@@ -1,0 +1,24 @@
+# Project Memory Anchor: FateGrid (九宮格命理風水 Roguelike)
+
+## 1. 專案願景與核心定位
+* **遊戲名稱**：FateGrid (暫定)
+* **核心機制**：
+  * **底層**：八字命理（個體屬性） + 三元玄空風水（九宮格環境動態）
+  * **玩法**：手機端直立式單手操作、九宮格（3x3）無限探索 Roguelike
+  * **故事**：異世界死亡回歸（Time Loop），每次輪迴因時間與降生方位歪斜，自動衍生全新劇情線與環境氣場
+* **目標市場**：全球跨語言（i18n），底層數值化/符號化，視覺直覺化（避開晦澀名詞）
+
+## 2. 架構原則 (For AI Collaboration)
+* **協作模式**：Gemini/CodeX 負責架構與代碼撰寫，游老師（User）負責 GitHub 檔案建立與執行測試。
+* **模組化切割**：
+  1. `/core`：純 Python/JS 命理與風水算牌邏輯（無 UI，純數學）
+  2. `/state`：遊戲時間心跳（Tick）與死亡回歸狀態機
+  3. `/data`：多語言 JSON 事件對照表
+  4. `/ui`：九宮格直立式單手操作介面 (MVP: HTML5/JS)
+
+## 3. 目前開發進度 (Current Milestone)
+* [x] 專案核心概念與架構定調
+* [x] 確定專案命名與記憶錨點機制
+* [ ] Milestone 1: 建立 GitHub Repo 基礎目錄結構
+* [ ] Milestone 2: 撰寫 `/core/bazi.py` (八字五行強度計算器)
+* [ ] Milestone 3: 撰寫 `/core/fengshui.py` (九宮格飛星動態矩陣)
