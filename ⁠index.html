@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FateGrid - 九宮格命理風水 Roguelike</title>
+    <title>FateGrid - 九宮格命理風水探索</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -21,20 +21,9 @@
             background: #1e1e1e;
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             box-sizing: border-box;
             text-align: center;
-        }
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            max-width: 360px;
-            background: #252525;
-            padding: 8px 0;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 14px;
         }
         .grid-container {
             display: grid;
@@ -42,181 +31,82 @@
             gap: 8px;
             width: 100%;
             max-width: 360px;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 1;
         }
         .cell {
             background: #2a2a2a;
-            border: 2px solid #444;
+            border: 1px solid #444;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            font-size: 14px;
             cursor: pointer;
             user-select: none;
-            transition: all 0.2s;
+            transition: background 0.2s;
         }
-        .cell:active { transform: scale(0.95); background: #3a3a3a; }
-        .cell-dir { font-size: 12px; color: #aaa; }
-        .cell-star { font-size: 16px; font-weight: bold; margin: 4px 0; }
-        .cell-elem { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
-        .elem-火 { background: #8b0000; }
-        .elem-水 { background: #00008b; }
-        .elem-木 { background: #006400; }
-        .elem-金 { background: #b8860b; }
-        .elem-土 { background: #8b5a2b; }
-        .log-box {
-            width: 100%;
-            max-width: 360px;
-            background: #1e1e1e;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 12px;
-            box-sizing: border-box;
-            min-height: 110px;
+        .cell:active {
+            background: #3a3a3a;
         }
-        .log-title { font-weight: bold; color: #ffd700; margin-bottom: 6px; }
-        .log-desc { font-size: 13px; line-height: 1.4; color: #ddd; }
-        .btn-loop {
-            width: 100%;
-            max-width: 360px;
-            background: #8b0000;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 12px;
-            font-size: 15px;
+        .cell .pos {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .cell .element {
+            font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
-            display: none;
+        }
+        .log {
+            width: 100%;
+            max-width: 360px;
+            margin-top: 16px;
+            background: #1e1e1e;
+            padding: 12px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 13px;
+            min-height: 80px;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div style="font-size: 18px; font-weight: bold; color: #ffd700;">FateGrid Prototype</div>
-        <div style="font-size: 13px; color: #aaa; margin-top: 4px;">輪迴第 <span id="loop-count" style="color:#ffd700;">1</span> 世</div>
-    </div>
-
-    <div class="stats-bar">
-        <div>日主：<span id="player-master" style="color: #4da6ff; font-weight:bold;">-</span></div>
-        <div>氣血 (HP)：<span id="player-hp" style="color: #ff4d4d; font-weight:bold;">100</span></div>
-        <div>和諧度：<span id="player-harmony" style="color: #5cdb5c; font-weight:bold;">50</span></div>
+        <h2 style="margin:0 0 8px 0; font-size:18px;">FateGrid 九宮格</h2>
+        <div style="font-size:12px; color:#aaa;">點擊方格觸發風水共鳴與八字能量</div>
     </div>
 
     <div class="grid-container" id="grid"></div>
 
-    <div class="log-box">
-        <div class="log-title" id="log-title">點擊上方九宮格進行探索</div>
-        <div class="log-desc" id="log-desc">進入探索，每個方位將因飛星與你的日主相生相剋而產生隨機遭遇。</div>
-    </div>
-
-    <button class="btn-loop" id="loop-btn" onclick="startNewLoop()">死亡回歸：發動時間重置</button>
+    <div class="log" id="log">提示：請點擊上方任意方格開始探索...</div>
 
     <script>
-        const elements = ['木', '火', '土', '金', '水'];
-        const stars = [
-            { name: "一白貪狼", elem: "水", nature: "吉" },
-            { name: "二黑巨門", elem: "土", nature: "凶" },
-            { name: "三碧祿存", elem: "木", nature: "凶" },
-            { name: "四綠文曲", elem: "木", nature: "吉" },
-            { name: "五黃廉貞", elem: "土", nature: "大凶" },
-            { name: "六白武曲", elem: "金", nature: "吉" },
-            { name: "七赤破軍", elem: "金", nature: "凶" },
-            { name: "八白左輔", elem: "土", nature: "吉" },
-            { name: "九紫右弼", elem: "火", nature: "大吉" }
+        const gridData = [
+            { pos: "巽 (東南)", name: "木", color: "#4CAF50" },
+            { pos: "離 (正南)", name: "火", color: "#F44336" },
+            { pos: "坤 (西南)", name: "土", color: "#FF9800" },
+            { pos: "震 (正東)", name: "木", color: "#8BC34A" },
+            { pos: "中宮",     name: "土", color: "#FFC107" },
+            { pos: "兌 (正西)", name: "金", color: "#9E9E9E" },
+            { pos: "艮 (東北)", name: "土", color: "#CDDC39" },
+            { pos: "坎 (正北)", name: "水", color: "#2196F3" },
+            { pos: "乾 (西北)", name: "金", color: "#E0E0E0" }
         ];
 
-        let state = {
-            loop: 1,
-            dayMaster: '金',
-            hp: 100,
-            harmony: 50,
-            isDead: false
-        };
+        const gridEl = document.getElementById("grid");
+        const logEl = document.getElementById("log");
 
-        function initGame() {
-            state.hp = 100;
-            state.harmony = 50;
-            state.isDead = false;
-            state.dayMaster = elements[Math.floor(Math.random() * elements.length)];
-            
-            document.getElementById('loop-count').innerText = state.loop;
-            document.getElementById('player-master').innerText = state.dayMaster + " (命格)";
-            document.getElementById('player-hp').innerText = state.hp;
-            document.getElementById('player-harmony').innerText = state.harmony;
-            document.getElementById('loop-btn').style.display = 'none';
-            document.getElementById('log-title').innerText = "進入新輪迴";
-            document.getElementById('log-desc').innerText = `時間發生歪斜！此世降生為【${state.dayMaster}】命格，九宮氣場已重置。`;
-
-            renderGrid();
-        }
-
-        function renderGrid() {
-            const gridEl = document.getElementById('grid');
-            gridEl.innerHTML = '';
-            const dirs = ['東南', '正南', '西南', '正東', '中央', '正西', '東北', '正北', '西北'];
-
-            dirs.forEach((dir, i) => {
-                const s = stars[i];
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.innerHTML = `
-                    <div class="cell-dir">${dir}</div>
-                    <div class="cell-star">${s.name.substring(0, 2)}</div>
-                    <div class="cell-elem elem-${s.elem}">${s.elem} (${s.nature})</div>
-                `;
-                cell.onclick = () => explore(dir, s);
-                gridEl.appendChild(cell);
-            });
-        }
-
-        function explore(dir, star) {
-            if (state.isDead) return;
-
-            let hpDamage = 0;
-            let harmonyChange = 0;
-            let msg = "";
-
-            if (star.nature === '大凶') {
-                hpDamage = 50;
-                harmonyChange = -30;
-                msg = `踏入【${dir}】死穴！遭遇煞氣突襲，嚴重受創！`;
-            } else if (star.nature === '大吉' || star.nature === '吉') {
-                hpDamage = -10;
-                harmonyChange = 20;
-                msg = `踏入【${dir}】吉位！吸收星脈靈氣，狀態提升。`;
-            } else {
-                hpDamage = 15;
-                harmonyChange = -5;
-                msg = `踏入【${dir}】，氣場平平，消耗部分體力。`;
-            }
-
-            state.hp = Math.max(0, Math.min(100, state.hp - hpDamage));
-            state.harmony = Math.max(0, Math.min(100, state.harmony + harmonyChange));
-
-            document.getElementById('player-hp').innerText = state.hp;
-            document.getElementById('player-harmony').innerText = state.harmony;
-            document.getElementById('log-title').innerText = `${dir} - ${star.name}`;
-
-            if (state.hp <= 0) {
-                state.isDead = true;
-                document.getElementById('log-desc').innerText = msg + " 氣血耗盡，你在這個輪迴中身亡！";
-                document.getElementById('loop-btn').style.display = 'block';
-            } else {
-                document.getElementById('log-desc').innerText = msg;
-            }
-        }
-
-        function startNewLoop() {
-            state.loop++;
-            initGame();
-        }
-
-        // 初始化開啟遊戲
-        initGame();
+        gridData.forEach((item, index) => {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.innerHTML = `<div class="pos">${item.pos}</div><div class="element" style="color:${item.color}">${item.name}</div>`;
+            cell.onclick = () => {
+                logEl.innerHTML = `已選擇：<b>${item.pos}</b> [屬性：<span style="color:${item.color}">${item.name}</span>]<br>觸發區域能量共鳴！`;
+            };
+            gridEl.appendChild(cell);
+        });
     </script>
 </body>
 </html>
