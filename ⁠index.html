@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FateGrid - 九宮格命理風水探索</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 100%;
+            max-width: 360px;
+            background: #1e1e1e;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 1 / 1;
+        }
+        .cell {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+        .cell:active {
+            transform: scale(0.95);
+            background: #3a3a3a;
+        }
+        .cell-dir { font-size: 12px; color: #aaa; }
+        .cell-star { font-size: 16px; font-weight: bold; margin: 4px 0; }
+        .cell-elem { font-size: 12px; padding: 2px 6px; border-radius: 4px; }
+        .elem-火 { background: #8b0000; }
+        .elem-水 { background: #00008b; }
+        .elem-木 { background: #006400; }
+        .elem-金 { background: #b8860b; }
+        .elem-土 { background: #8b5a2b; }
+        .log-box {
+            width: 100%;
+            max-width: 360px;
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            box-sizing: border-box;
+            min-height: 100px;
+        }
+        .log-title { font-weight: bold; color: #ffd700; margin-bottom: 8px; }
+        .log-desc { font-size: 14px; line-height: 1.4; color: #ddd; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div style="font-size: 18px; font-weight: bold; color: #ffd700;">FateGrid MVP Prototype</div>
+        <div style="font-size: 13px; color: #aaa; margin-top: 4px;">主角日主：<span style="color: #4da6ff; font-weight:bold;">庚金 (身弱)</span></div>
+    </div>
+
+    <div class="grid-container" id="grid">
+        <!-- 3x3 九宮格會動態渲染於此 -->
+    </div>
+
+    <div class="log-box">
+        <div class="log-title" id="log-title">點擊上方九宮格進行探索</div>
+        <div class="log-desc" id="log-desc">點擊任意宮位，以體驗主角八字與風水氣場之互動效果。</div>
+    </div>
+
+    <script>
+        // 模擬九宮格飛星數據
+        const palaces = [
+            { id: 4, dir: "巽宮 (東南)", star: "四綠文曲", elem: "木", nature: "吉" },
+            { id: 9, dir: "離宮 (正南)", star: "九紫右弼", elem: "火", nature: "大吉" },
+            { id: 2, dir: "坤宮 (西南)", star: "二黑巨門", elem: "土", nature: "凶" },
+            { id: 3, dir: "震宮 (正東)", star: "三碧祿存", elem: "木", nature: "凶" },
+            { id: 5, dir: "中宮 (中央)", star: "五黃廉貞", elem: "土", nature: "大凶" },
+            { id: 7, dir: "兌宮 (正西)", star: "七赤破軍", elem: "金", nature: "凶" },
+            { id: 8, dir: "艮宮 (東北)", star: "八白左輔", elem: "土", nature: "吉" },
+            { id: 1, dir: "坎宮 (正北)", star: "一白貪狼", elem: "水", nature: "吉" },
+            { id: 6, dir: "乾宮 (西北)", star: "六白武曲", elem: "金", nature: "吉" }
+        ];
+
+        const gridEl = document.getElementById('grid');
+        const logTitleEl = document.getElementById('log-title');
+        const logDescEl = document.getElementById('log-desc');
+
+        palaces.forEach(p => {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.innerHTML = `
+                <div class="cell-dir">${p.dir.split(' ')[0]}</div>
+                <div class="cell-star">${p.star.substring(0, 2)}</div>
+                <div class="cell-elem elem-${p.elem}">${p.elem} (${p.nature})</div>
+            `;
+            cell.onclick = () => explore(p);
+            gridEl.appendChild(cell);
+        });
+
+        function explore(p) {
+            logTitleEl.innerText = `踏入：${p.dir} - ${p.star}`;
+            let desc = "";
+            
+            // 簡化版的庚金互動邏輯
+            if (p.elem === '火') {
+                desc = `【官殺克身】強烈火氣壓制你的庚金核心！氣血受阻，遭遇強敵伏擊危險度提升。 (和諧分: -20)`;
+            } else if (p.elem === '土') {
+                desc = `【印星生身】厚土生滋金氣！你的精神力量大幅獲得修復，並獲得古老防護加成。 (和諧分: +50)`;
+            } else if (p.elem === '水') {
+                desc = `【傷官洩秀】水氣洗滌金芒，靈感大發！解鎖了隱藏遺跡與機關。 (和諧分: +20)`;
+            } else if (p.elem === '木') {
+                desc = `【財星開採】踏入木氣旺盛之地，發現了豐富的異世界資源與寶箱。 (和諧分: +35)`;
+            } else {
+                desc = `【比和同氣】同為金屬性氣場，防禦力提升，進入安全對峙狀態。 (和諧分: +10)`;
+            }
+
+            if (p.nature.includes("凶")) {
+                desc += " [⚠️ Warning: 凶星飛臨，環境帶有負面狀態]";
+            }
+
+            logDescEl.innerText = desc;
+        }
+    </script>
+</body>
+</html>
