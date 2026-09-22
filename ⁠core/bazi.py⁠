@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+"""
+FateGrid - Core Module: Bazi Calculator
+計算八字底層五行能量與核心屬性
+"""
+
+# 十天干五行屬性
+GAN_ELEMENTS = {
+    '甲': '木', '乙': '木',
+    '丙': '火', '丁': '火',
+    '戊': '土', '己': '土',
+    '庚': '金', '辛': '金',
+    '壬': '水', '癸': '水'
+}
+
+# 十二地支藏幹主要五行
+ZHI_ELEMENTS = {
+    '子': '水', '丑': '土', '寅': '木', '卯': '木',
+    '辰': '土', '巳': '火', '午': '火', '未': '土',
+    '申': '金', '酉': '金', '戌': '土', '亥': '水'
+}
+
+def calculate_bazi_profile(year_gan, year_zhi, month_gan, month_zhi, day_gan, day_zhi, hour_gan, hour_zhi):
+    """
+    輸入四柱八字（天干地支），輸出五行能量分佈與日主屬性
+    """
+    element_counts = {'木': 0, '火': 0, '土': 0, '金': 0, '水': 0}
+    
+    # 統計天干五行 (各佔 15% 權重)
+    gans = [year_gan, month_gan, day_gan, hour_gan]
+    for g in gans:
+        elem = GAN_ELEMENTS.get(g, '木')
+        element_counts[elem] += 15
+
+    # 統計地支五行 (地支力量較大，各佔 10% 權重，月令佔 20%)
+    zhis = [(year_zhi, 10), (month_zhi, 20), (day_zhi, 10), (hour_zhi, 10)]
+    for z, weight in zhis:
+        elem = ZHI_ELEMENTS.get(z, '木')
+        element_counts[elem] += weight
+
+    day_master = GAN_ELEMENTS.get(day_gan, '木')
+    
+    # 計算日主強度 (同類五行比重)
+    same_element_score = element_counts[day_master]
+    is_strong = same_element_score >= 35
+
+    return {
+        "day_master": day_master,       # 日主五行（核心屬性）
+        "is_strong": is_strong,         # 身強 / 身弱
+        "element_matrix": element_counts # 五行能量百分比
+    }
+
+if __name__ == "__main__":
+    # 測試範例：庚金日主
+    test_profile = calculate_bazi_profile('甲', '子', '丙', '寅', '庚', '午', '辛', '巳')
+    print("八字運算測試結果：", test_profile)
