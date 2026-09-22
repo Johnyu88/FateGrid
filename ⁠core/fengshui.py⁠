@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+"""
+FateGrid - Core Module: FengShui Grid Generator
+計算九宮格飛星氣場與環境動態屬性
+"""
+
+# 九星基礎屬性與吉凶 (1~9)
+NINE_STARS = {
+    1: {"name": "一白貪狼", "element": "水", "nature": "吉", "type": "官運/靈感"},
+    2: {"name": "二黑巨門", "element": "土", "nature": "凶", "type": "病符/衰退"},
+    3: {"name": "三碧祿存", "element": "木", "nature": "凶", "type": "爭執/衝突"},
+    4: {"name": "四綠文曲", "element": "木", "nature": "吉", "type": "學術/悟性"},
+    5: {"name": "五黃廉貞", "element": "土", "nature": "大凶", "type": "毀滅/陷阱"},
+    6: {"name": "六白武曲", "element": "金", "nature": "吉", "type": "權力/防禦"},
+    7: {"name": "七赤破軍", "element": "金", "nature": "凶", "type": "破財/伏擊"},
+    8: {"name": "八白左輔", "element": "土", "nature": "吉", "type": "財富/資源"},
+    9: {"name": "九紫右弼", "element": "火", "nature": "大吉", "type": "爆發/奇遇"}
+}
+
+# 九宮格方位定義 (1~9宮 映射 方位)
+PALACE_DIRECTIONS = {
+    1: "坎宮 (正北)", 2: "坤宮 (西南)", 3: "震宮 (正東)",
+    4: "巽宮 (東南)", 5: "中宮 (中央)", 6: "乾宮 (西北)",
+    7: "兌宮 (正西)", 8: "艮宮 (東北)", 9: "離宮 (正南)"
+}
+
+def generate_fengshui_grid(center_star=5):
+    """
+    根據入中宮的飛星 (center_star)，生成完整的 3x3 九宮格氣場地圖
+    使用順飛演算法
+    """
+    grid = {}
+    # 順飛路徑：5中宮 -> 6乾 -> 7兌 -> 8艮 -> 9離 -> 1坎 -> 2坤 -> 3震 -> 4巽
+    flight_path = [5, 6, 7, 8, 9, 1, 2, 3, 4]
+    
+    for idx, palace in enumerate(flight_path):
+        current_star = (center_star - 5 + idx) % 9 + 1
+        star_info = NINE_STARS[current_star]
+        
+        grid[palace] = {
+            "direction": PALACE_DIRECTIONS[palace],
+            "star_number": current_star,
+            "star_name": star_info["name"],
+            "element": star_info["element"],
+            "nature": star_info["nature"],
+            "effect_type": star_info["type"]
+        }
+        
+    return grid
+
+if __name__ == "__main__":
+    # 測試範例：當前流年 9 飛入中宮
+    test_grid = generate_fengshui_grid(9)
+    print("九宮格風水生成測試結果：")
+    for palace_id, info in test_grid.items():
+        print(f"宮位 {palace_id} [{info['direction']}]: {info['star_name']} ({info['element']}) - {info['nature']}")
