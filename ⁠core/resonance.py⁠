@@ -1,0 +1,67 @@
+# -*- coding: utf-8 -*-
+"""
+FateGrid - Core Module: Elemental Resonance Engine
+計算主角八字五行與九宮格風水氣場的生剋互動與事件觸發
+"""
+
+# 五行生剋關係矩陣
+ELEMENT_RELATIONS = {
+    "木": {"生": "火", "克": "土", "被生": "水", "被克": "金"},
+    "火": {"生": "土", "克": "金", "被生": "木", "被克": "水"},
+    "土": {"生": "金", "克": "水", "被生": "火", "被克": "木"},
+    "金": {"生": "水", "克": "木", "被生": "土", "被克": "火"},
+    "水": {"生": "木", "克": "火", "被生": "金", "被克": "土"}
+}
+
+def resolve_resonance(player_bazi, palace_fengshui):
+    """
+    計算玩家進入特定九宮格宮位時的共振效應
+    """
+    day_master = player_bazi["day_master"]           # 主角日主五行
+    star_element = palace_fengshui["element"]        # 該宮位飛星五行
+    star_nature = palace_fengshui["nature"]          # 飛星吉凶 (吉/凶/大吉/大凶)
+    
+    relation_type = "比和" # 預設屬性相同
+    status_effect = "NEUTRAL"
+    score_modifier = 0
+
+    relations = ELEMENT_RELATIONS[day_master]
+
+    if star_element == relations["被生"]:
+        relation_type = "印星生身 (相生)"
+        status_effect = "BUFF_RESOURCE_GAIN"
+        score_modifier = 30
+    elif star_element == relations["生"]:
+        relation_type = "食傷洩秀 (消耗)"
+        status_effect = "DEBUFF_ENERGY_DRAIN"
+        score_modifier = -10
+    elif star_element == relations["被克"]:
+        relation_type = "官殺克身 (受壓)"
+        status_effect = "DANGER_HIGH_CONFLICT"
+        score_modifier = -40
+    elif star_element == relations["克"]:
+        relation_type = "財星耗氣 (開採)"
+        status_effect = "BUFF_TREASURE_OPPORTUNITY"
+        score_modifier = 15
+
+    # 疊加飛星原生的吉凶
+    if star_nature in ["大吉", "吉"]:
+        score_modifier += 20
+    elif star_nature in ["大凶", "凶"]:
+        score_modifier -= 30
+
+    return {
+        "palace_direction": palace_fengshui["direction"],
+        "star_name": palace_fengshui["star_name"],
+        "relation_type": relation_type,
+        "status_effect": status_effect,
+        "final_harmony_score": score_modifier # 宮位和諧分 (越高越吉，越低越危險)
+    }
+
+if __name__ == "__main__":
+    # 測試範例：庚金日主踏入九紫火星宮位 (火克金 = 官殺壓制)
+    mock_bazi = {"day_master": "金", "is_strong": False}
+    mock_fengshui = {"direction": "離宮 (正南)", "star_name": "九紫右弼", "element": "火", "nature": "大吉"}
+    
+    result = resolve_resonance(mock_bazi, mock_fengshui)
+    print("八字與風水共振運算測試結果：", result)
